@@ -24,12 +24,12 @@ include_once __DIR__ . '/../Components/Validate/Validate.php';
 
 Создаем экземпляр объекта:
 ```php
-$validate = new Validate();
+$validation = new Validate();
 ```
 
 Передаем в метод check класса Validate первым параметром глобальный массив POST, например, с переданными данными с пользовательской формы и вторым параметром наши правила валидации:
 ```php
-$validation = $validate->check($_POST, [
+$validation = $validation->check($_POST, [
             'username' => [
                 'required' => true,      //поле в форме/ключ в массиве с данными с именем ‘username’ обязателен
                 'min' => 2,	         //минимальное кол-во введенных символов поля ‘username’
@@ -51,7 +51,23 @@ $validation = $validate->check($_POST, [
 ```
 Названия ключей массива с правилами валидации (username, email, password, password_again или какие-то другие созданные вами) должны быть такими же, как и в атрибутах name тегов элементов - если это пользовательская форма, либо такими же как названия ключей того массива, который вы передаете с данными на валидацию.
 
+Пример проверки результатов валидации:
+```php
+if ($validation->passed()) {        //Если валидация прошла успешно
+            //code...
+}
+```
 
+Привет вывода ошибок возникших в процессе валидации:
+```php
+if (!$validation->passed()) {      //Если валидация не пройдена и имеются ошибки
+       echo '<div class="alert alert-danger"><ul>';
+           foreach ($validation->errors() as $error) {
+                 echo '<li>' . $error . '</li>';
+            }
+       echo '</ul></div>';
+}
+```
 
 
 # Ход мыслей:
