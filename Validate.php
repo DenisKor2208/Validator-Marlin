@@ -1,25 +1,30 @@
 <?php
 
 class Validate {
-    private $passed = false, $errors = [], $db = null;
+    private $passed = false,
+            $errors = [];
 
-    public function __construct($dbConnect) {
-        //$this->db = Database::getInstance();
-        $this->db = $dbConnect;
-    }
+    /**
+    Parameters:
+    $source - array
+    $arrayOfRules - array
 
-    public function check($source, $items = []) { //$items - 'username' с массивами значений
-        foreach($items as $item => $rules) { //$items - 'username' с массивами - значениями; $item('username') => $rules(массив - значение ключа 'username')
-            foreach ($rules as $rule => $rule_value) { //$rules(массив - значение ключа 'username') as $rule('required') => $rule_value('true')
+    Description: Проверка переданных данных $source на соответствие переданным правилам $arrayOfRules
 
-                $value = $source[$item]; //$value = $_POST['username'] //получаем значение input из формы
+    Return value: $this
+     **/
+    public function check($source, $arrayOfRules = []) {
+        foreach($arrayOfRules as $item => $rules) {
+            foreach ($rules as $rule => $rule_value) {
 
-                if ($rule == 'required' && empty($value)) { // если стоит правило 'required' и значение пустое
-                    $this->addError("{$item} является обязательным!"); // то выводим ошибку
+                $value = $source[$item];
+
+                if ($rule == 'required' && empty($value)) {
+                    $this->addError("{$item} является обязательным!");
                 } else if (!empty($value)) {
-                    switch ($rule) { // в первой итерации $rule = 'required'
+                    switch ($rule) {
                         case 'min':
-                            if (strlen($value) < $rule_value) { //strlen($value) - кол-во символов в значении $value
+                            if (strlen($value) < $rule_value) {
                                 $this->addError("{$item} должен состоять минимум из {$rule_value} символов.");
                             }
                         break;
@@ -29,18 +34,12 @@ class Validate {
                             }
                         break;
                         case 'matches':
-                            if ($value != $source[$rule_value]) { // если $value (значение 'password_again' из массива $_POST) не равняется $rule_value(значение поля 'password' из массива $_POST)
-                                $this->addError("{$rule_value} должен совпадать с {$item}"); // то выводим ошибку
-                            }
-                        break;
-                        case 'unique':
-                            $check = $this->db->get($rule_value, [$item, '=', $value]);// $rule_value - из какой таблицы в БД?; $item - поле username и в БД будут просматриваться значения поля username; $value - значение поля username из массива $_POST
-                            if ($check->count()) { //проверка на кол-во результатов из БД по введенному в форму поля username значению
-                                $this->addError("{$item} уже существует."); //если результатов будет больше нуля, то ошибка - значение не уникальное
+                            if ($value != $source[$rule_value]) {
+                                $this->addError("{$rule_value} должен совпадать с {$item}");
                             }
                         break;
                         case 'email':
-                            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) { //если не соответствует правилу валидации и возвращает false, до добавляем ошибку
+                            if (!filter_var($value, FILTER_VALIDATE_EMAIL)) {
                                 $this->addError("{$item} не является электронной почтой.");
                             }
                         break;
@@ -49,22 +48,44 @@ class Validate {
             }
         }
 
-        if (empty($this->errors)) { //если ошибок нет,
-            $this->passed = true;   // то валидация прошла успешно
+        if (empty($this->errors)) {
+            $this->passed = true;
         }
 
         return $this;
     }
 
-    public function addError($error) { //записываем ошибки
+    /**
+    Parameters:
+    $error - string
+
+    Description: Запись возникших ошибок в процессе валидации
+
+    Return value: null
+     **/
+    private function addError($error) {
         $this->errors[] = $error;
     }
 
+    /**
+    Parameters:
+
+    Description: Получение возникших ошибок в процессе валидации
+
+    Return value: array
+     **/
     public function errors() {
         return $this->errors;
     }
 
-    public function passed() { // вывод true или false исходя из того как прошла валидация
+    /**
+    Parameters:
+
+    Description: Получение результатов валидации - true либо false
+
+    Return value: boolean
+     **/
+    public function passed() {
         return $this->passed;
     }
 }

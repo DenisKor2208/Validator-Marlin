@@ -3,3 +3,5 @@
 .vscode/
 *.sw*
 login.php
+*.docx
+*.txt
